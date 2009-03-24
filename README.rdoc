@@ -50,6 +50,11 @@ It shouldn't really matter to you as a programmer which integer the attribute wa
   @horse.traits.include?(:happy)  # => true
   @horse.traits.to_a              # => [:happy, :fluffy]
   
+It's also possible to put multiple values in brakets. In that case you will only get true if ALL of the traits are present.
+  
+  @horse.traits[:happy, :fluffy]  # => true
+  @horse.traits[:happy, :smug]    # => false
+
 Alrighty. Now let's say the fluffy horse has become quite depressed lately. We need to remove the :happy trait.
   
   # just subtract the trait
