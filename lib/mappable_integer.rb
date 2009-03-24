@@ -51,7 +51,20 @@ module IntegerFu
         args.all? { |key| key_true?(key) }
       end
     end
-  
+    
+    def []=(arg, value)
+      arg   = arg.to_sym
+      value = !!value
+      
+      if @keys.include?(arg)
+        if value
+          add_keys!([arg])
+        else
+          remove_keys!([arg])
+        end
+      end
+    end
+    
     def <<(*args)
       self + args
     end
@@ -103,11 +116,13 @@ module IntegerFu
     end
   
     
-    # Handle question-mark methods.
+    # Handle question-mark and setter methods.
     # Delegate everything else to the actual integer.
     def method_missing(meth, *args, &block)
       meth = meth.to_s
-      if meth.ends_with?('?') && @keys.include?(meth[0, meth.size - 1].to_sym)
+      if meth.ends_with?('=') && @keys.include?(meth[0, meth.size - 1].to_sym)
+        self[meth[0, meth.size - 1].to_sym] = args.first
+      elsif meth.ends_with?('?') && @keys.include?(meth[0, meth.size - 1].to_sym)
         self[meth[0, meth.size - 1].to_sym]
       else
         get_model_attr.send(meth.to_sym, *args, &block)

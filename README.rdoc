@@ -38,6 +38,9 @@ Let's mark the horse happy.
   @horse.traits += :fluffy        # => 5
   @horse.traits                   # => 5
   
+  # last but not least, there are some hash-like accessors, as well as magic ones
+  @horse.traits[:smug]  = true    # => true
+  @horse.traits.smug    = false   # => false
   
 It shouldn't really matter to you as a programmer which integer the attribute was set to. All you need to know is that the horse is happy and fluffy. You have multiple ways to find out if that's the case:
   
@@ -90,6 +93,9 @@ And so on.
 
 == Important little details
 Above I show you how to add and remove traits using the + and - operators.  They work with either arrays or separate values. However, when you add new values, they will be added only if they don't already exist in the traits. Respectively, if you subtract values, they only get subtracted if they do exist.
+
+== TODO
+Write tests!!!
 
 == License
 
