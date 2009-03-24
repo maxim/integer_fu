@@ -26,8 +26,14 @@ module IntegerFu
         keys = symbolize(keys)
         array = symbolize(array)
         array.inject(0) do |sum, key|
-          sum += (keys.index(key) ? 2**keys.index(key) : 0)
+          sum += value_for(key, keys)
         end
+      end
+      
+      def value_for(key, array)
+        key = key.to_sym
+        array = symbolize(array)
+        array.index(key) ? 2**array.index(key) : 0
       end
       
       def symbolize(array)
@@ -168,8 +174,7 @@ module IntegerFu
     end
   
     def value_for(key)
-      key = key.to_sym
-      @keys.index(key) ? 2**@keys.index(key) : 0
+      self.class.value_for(key, @keys)
     end
   
     def get_model_attr

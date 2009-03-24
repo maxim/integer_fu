@@ -71,6 +71,18 @@ Now say you just want to give your horse a whole different array of traits. This
   @horse.traits.to_a              # => [:smug, :fluffy]
   
 
+== Finding fluffy horse in the database
+
+Integer_fu provides an efficient and flexible way to find all matching horses in database. Here's how you find :happy AND :fluffy horses:
+
+  Horse.traits(:happy, :fluffy)   # => []
+
+This will find every horse that's both happy and fluffy. Since this is actually a proper named scope you can chain it with your own finders and scopes.
+
+  Horse.traits(:happy, :fluffy).find { :conditions => {...} }
+
+How cool is that?
+
 == That's not all
 
 Your traits attribute is now enumerable (although not sortable). It means you can do this:

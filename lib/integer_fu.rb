@@ -30,6 +30,14 @@ module IntegerFu
             self[attr_name] = IntegerFu::MappableInteger.array_to_integer(args, options[:values])
           end
         end
+        
+        named_scope attr_name, proc { |*args| 
+          args.flatten!
+          args = IntegerFu::MappableInteger.symbolize(args)
+          cumulative_value = IntegerFu::MappableInteger.array_to_integer(args, options[:values])
+          matching_integers = (0..(2**options[:values].size-1)).select{|n| n & cumulative_value == cumulative_value }
+          {:conditions => {attr_name.to_s => matching_integers}}
+        }
       end
     end
   end
