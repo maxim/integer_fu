@@ -1,0 +1,1 @@
+require 'integer_fu'

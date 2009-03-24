@@ -1,0 +1,110 @@
+= integer_fu
+
+Allows conveniently storing many boolean values (such as checkboxes) in a single integer field in database.  You don't have to create new columns for every boolean value (or every checkbox) that you may add in the future.
+
+== Install
+  
+  script/plugin install git://github.com/maxim/integer_fu.git
+  
+== Usage
+
+Let's say you have a model called Horse. You want to index all your horses in your database, including their special characteristics.  Let's say your horses can be happy, smug, or fluffy. In fact, a single horse can be both happy and fluffy, as well as smug and fluffy, or any other combination for that sake. Looks like if you were to make a form to input this data, you'd probably use checkboxes.
+
+So you have three values that could be true or false. Usually in your database you'd need to create 3 boolean columns: happy, smug, and fluffy. But that's too much work. Imagine if you add new traits often. You would have to change table structure every time for new columns. Bleh. With this plugin all you need to have is a single integer column, for example "traits". Assuming you have that column, let's make use of this plugin.
+
+  model Horse < ActiveRecord::Base
+    map_integer :traits, :values => [:happy, :smug, :fluffy]
+  end
+  
+We just mapped 3 possible traits to a horse. It's important to note that order matters. Once you put :happy first, you should never move it to any other position. If you swap :happy and :smug - every horse that used to be :smug will become :happy and vice versa. You CAN however add more traits! (It'd be kinda dull otherwise.) If in the future you find that horses are sometimes gluttonous - you can easily append :gluttonous to the end of this array without breaking anything.
+
+
+== New behavior for your integer attribute
+
+Now that we mapped the 'traits' attribute to your desired values, what do you get? That's right, lots of convenient accessor options. Here's an example.
+
+  @horse = Horse.new
+  @horse.traits                   # => nil
+  @horse.traits[:happy]           # => false
+  @horse.traits[:smug]            # => false
+  
+Let's mark the horse happy.
+  
+  # one way to mark a horse
+  @horse.traits << :happy         # => 1
+  @horse.traits                   # => 1
+  
+  # another way to mark a horse (you can use arrays of values too)
+  @horse.traits += :fluffy        # => 5
+  @horse.traits                   # => 5
+  
+  
+It shouldn't really matter to you as a programmer which integer the attribute was set to. All you need to know is that the horse is happy and fluffy. You have multiple ways to find out if that's the case:
+  
+  # efficient way
+  @horse.traits[:happy]           # => true
+  
+  # this is slower as it relies upon method_missing
+  @horse.traits.fluffy?           # => true
+  
+  @horse.traits.include?(:happy)  # => true
+  @horse.traits.to_a              # => [:happy, :fluffy]
+  
+Alrighty. Now let's say the fluffy horse has become quite depressed lately. We need to remove the :happy trait.
+  
+  # just subtract the trait
+  @horse.traits -= :happy         # => 4
+
+Now say you just want to give your horse a whole different array of traits. This is what would happen if you were submitting a form with array of checkboxes.
+  
+  # simply set the traits to desired array
+  @horse.traits = ["fluffy", "smug"]
+  @horse.traits                   # => 6
+  @horse.traits.to_a              # => [:smug, :fluffy]
+  
+
+== That's not all
+
+Your traits attribute is now enumerable (although not sortable). It means you can do this:
+
+  @horse.traits.collect { |trait| "#{trait} happy" }  # => ["smug horse", "fluffy horse"]
+
+== How about old integer behavior?
+Now, I probably haven't covered all corners here, but for most imaginable tasks your attribute still behaves like an integer.
+
+  @horse.traits       # => 6
+  @horse.traits.to_a  # => [:smug, :fluffy]
+  
+  @horse.traits += 1  # => 7
+  @horse.traits.to_a  # => [:happy, :smug, :fluffy]
+
+  @horse.traits > 5   # true
+  @horse.traits == 7  # true
+  
+And so on.
+
+== Important little details
+Above I show you how to add and remove traits using the + and - operators.  They work with either arrays or separate values. However, when you add new values, they will be added only if they don't already exist in the traits. Respectively, if you subtract values, they only get subtracted if they do exist.
+
+== License
+
+Copyright (c) 2009 Maxim Chernyak
+ 
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+ 
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+ 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
