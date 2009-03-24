@@ -67,7 +67,7 @@ Now say you just want to give your horse a whole different array of traits. This
 
 Your traits attribute is now enumerable (although not sortable). It means you can do this:
 
-  @horse.traits.collect { |trait| "#{trait} happy" }  # => ["smug horse", "fluffy horse"]
+  @horse.traits.collect { |trait| "#{trait} horse" }  # => ["smug horse", "fluffy horse"]
 
 == How about old integer behavior?
 Now, I probably haven't covered all corners here, but for most imaginable tasks your attribute still behaves like an integer.
