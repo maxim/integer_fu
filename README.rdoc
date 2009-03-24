@@ -12,7 +12,7 @@ Let's say you have a model called Horse. You want to index all your horses in yo
 
 So you have three values that could be true or false. Usually in your database you'd need to create 3 boolean columns: happy, smug, and fluffy. But that's too much work. Imagine if you add new traits often. You would have to change table structure every time for new columns. Bleh. With this plugin all you need to have is a single integer column, for example "traits". Assuming you have that column, let's make use of this plugin.
 
-  model Horse < ActiveRecord::Base
+  class Horse < ActiveRecord::Base
     map_integer :traits, :values => [:happy, :smug, :fluffy]
   end
   
