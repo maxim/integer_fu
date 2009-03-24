@@ -19,11 +19,12 @@ module IntegerFu
   #   1111 15
 
   class MappableInteger
-    include Comparable
     include Enumerable
     
     class << self
       def array_to_integer(array, keys)
+        keys = symbolize(keys)
+        array = symbolize(array)
         array.inject(0) do |sum, key|
           sum += (keys.index(key) ? 2**keys.index(key) : 0)
         end
@@ -83,29 +84,17 @@ module IntegerFu
     end
     
     def is_a?(klass)
-      get_model_attr.is_a?(klass)
-    end
-    
-    def =~(other)
-      get_model_attr =~ other.to_i
-    end
-    
-    def <=>(other)
-      get_model_attr <=> other.to_i
-    end
-
-    def to_s
-      get_model_attr.to_s
+      get_model_attr.is_a?(klass) || self.is_a?(klass)
     end
   
     def inspect
       get_model_attr.inspect
     end
-  
-    def to_i
-      get_model_attr
+    
+    def to_s
+      get_model_attr.to_s
     end
-  
+    
     # ================================
     # Additional conveniences
     # ================================
@@ -113,12 +102,15 @@ module IntegerFu
       @keys.select{ |k| key_true?(k) }
     end
   
+    
+    # Handle question-mark methods.
+    # Delegate everything else to the actual integer.
     def method_missing(meth, *args, &block)
       meth = meth.to_s
       if meth.ends_with?('?') && @keys.include?(meth[0, meth.size - 1].to_sym)
         self[meth[0, meth.size - 1].to_sym]
       else
-        super(meth.to_sym, *args, &block)
+        get_model_attr.send(meth.to_sym, *args, &block)
       end
     end
     
@@ -156,10 +148,12 @@ module IntegerFu
     end
   
     def key_true?(key)
+      key = key.to_sym
       get_model_attr ? (get_model_attr[@keys.index(key)] == 1) : false
     end
   
     def value_for(key)
+      key = key.to_sym
       @keys.index(key) ? 2**@keys.index(key) : 0
     end
   
