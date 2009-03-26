@@ -1,3 +1,4 @@
+require 'helpers'
 require 'mappable_integer'
 
 module IntegerFu
@@ -12,6 +13,7 @@ module IntegerFu
       def map_integer(attr_name, options)
         options.symbolize_keys!
         attr_name = attr_name.to_sym
+        helpers = IntegerFu::Helpers
         
         if options[:values].empty?
           raise IntegerFu::IntegerFuError, "Values are required for integer mapping (attempting to map attribute \"#{attr_name}\")."
@@ -23,18 +25,20 @@ module IntegerFu
         
         define_method "#{attr_name}=" do |*args|
           args.flatten!
+          
           if args.first.is_a?(Numeric) || args.first == nil
             self[attr_name] = args.first
           else
-            args = IntegerFu::MappableInteger.symbolize(args)
-            self[attr_name] = IntegerFu::MappableInteger.array_to_integer(args, options[:values])
+            # If dealing with hash, only need keys where values are truthy
+            args = helpers.keys_with_truthy_values(args.first) if args.first.is_a?(Hash)
+            args = helpers.symbolize(args)
+            self[attr_name] = helpers.array_to_integer_with_keys(options[:values], args)
           end
         end
         
         named_scope attr_name, proc { |*args| 
-          args.flatten!
-          args = IntegerFu::MappableInteger.symbolize(args)
-          cumulative_value = IntegerFu::MappableInteger.array_to_integer(args, options[:values])
+          args = helpers.symbolize(args.flatten)
+          cumulative_value = helpers.array_to_integer_with_keys(options[:values], args)
           matching_integers = (0..(2**options[:values].size-1)).select{|n| n & cumulative_value == cumulative_value }
           {:conditions => {attr_name.to_s => matching_integers}}
         }

@@ -63,13 +63,17 @@ Alrighty. Now let's say the fluffy horse has become quite depressed lately. We n
   # just subtract the trait
   @horse.traits -= :happy         # => 4
 
-Now say you just want to give your horse a whole different array of traits. This is what would happen if you were submitting a form with array of checkboxes.
+Now say you just want to give your horse a whole different array of traits. Or hash. These are useful when working with submitted checkbox values.
   
   # simply set the traits to desired array
   @horse.traits = ["fluffy", "smug"]
   @horse.traits                   # => 6
   @horse.traits.to_a              # => [:smug, :fluffy]
   
+  # hash also works, but it only sets keys if the value of that key evaluates to true
+  @horse.traits = {"fluffy" => "foo", "smug" => false}
+  @horse.traits                   # => 4
+  @horse.traits.to_a              # => [:fluffy] (value of "smug" was false, hence only :fluffy was set)
 
 == Finding fluffy horse in the database
 

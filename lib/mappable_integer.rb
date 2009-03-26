@@ -1,55 +1,20 @@
 module IntegerFu
-
-  #  Cheat sheet
-  #    000 0
-  #    001 1
-  #    010 2
-  #    011 3
-  #    100 4
-  #    101 5
-  #    110 6
-  #    111 7
-  #   1000 8
-  #   1001 9
-  #   1010 10
-  #   1011 11
-  #   1100 12
-  #   1101 13
-  #   1110 14
-  #   1111 15
-
   class MappableInteger
     include Enumerable
+    include IntegerFu::Helpers
     
-    class << self
-      def array_to_integer(array, keys)
-        keys = symbolize(keys)
-        array = symbolize(array)
-        array.inject(0) do |sum, key|
-          sum += value_for(key, keys)
-        end
-      end
-      
-      def value_for(key, array)
-        key = key.to_sym
-        array = symbolize(array)
-        array.index(key) ? 2**array.index(key) : 0
-      end
-      
-      def symbolize(array)
-        array.map {|v| v.to_sym }
-      end
-    end
-  
     def initialize(attr_name, parent_model, keys)
       @attr_name = attr_name.to_sym
       @model = parent_model
-      @keys = self.class.symbolize(keys)
+      @keys = symbolize(keys)
     end
     
-    # ================================
-    # Overriden operators and methods
-    # ================================
+    ##
+    # Allows accessing values in following ways
+    #   foo[1]            # behaves like an integer
+    #   foo[:bar]         # returns true if :bar is marked as true
+    #   foo[:bar, "baz"]  # returns true if :bar and :baz are marked true
+    #
     def [](*args)
       if args.first.is_a?(Numeric)
         get_model_attr[args.first]
@@ -58,6 +23,11 @@ module IntegerFu
       end
     end
     
+    ##
+    # Allows setting particular key to a boolean value (equivalent to adding/subtracting with these keys)
+    #   foo[:bar] = false       # :bar is now false
+    #   foo["baz"] = "string"   # :baz is set to true
+    #
     def []=(arg, value)
       arg   = arg.to_sym
       value = !!value
@@ -68,13 +38,23 @@ module IntegerFu
         else
           remove_keys!([arg])
         end
+      else
+        IntegerFu.raise_undefined_key_error(arg)
       end
     end
     
+    ##
+    # Delegates to + operator
+    #
     def <<(*args)
       self + args
     end
   
+  
+    ##
+    # Adds multiple key identifiers (equivalent of setting them to true)
+    #   foo += [:bar, "baz"]  # sets :bar and :baz to true unless they're already true
+    #
     def +(*args)
       if args.first.is_a?(Numeric)
         get_model_attr + args.first
@@ -82,7 +62,11 @@ module IntegerFu
         add_keys!(args)
       end
     end
-  
+    
+    ##
+    # Subtracts multiple key identifiers (equivalent of setting them to false)
+    #   foo -= :baz   # sets :baz to false unless they're already false
+    #
     def -(*args)
       if args.first.is_a?(Numeric)
         get_model_attr - args.first
@@ -91,39 +75,34 @@ module IntegerFu
       end
     end
     
-    # ================================
-    # Delegated operators and methods
-    # ================================
-    def ==(other)
-      get_model_attr == other.to_i
-    end
-    
-    def eql?(other)
-      get_model_attr.eql?(other.to_i)
-    end
-    
-    def is_a?(klass)
-      get_model_attr.is_a?(klass) || self.is_a?(klass)
-    end
-  
-    def inspect
-      get_model_attr.inspect
-    end
-    
-    def to_s
-      get_model_attr.to_s
-    end
-    
-    # ================================
-    # Additional conveniences
-    # ================================
+    ##
+    # Collects all keys which are set to true, returns them as an array
+    #   foo.to_a    # => [:bar, :baz] (assuming :bar and :baz are set to true)
+    #
     def to_a
       @keys.select{ |k| key_true?(k) }
     end
-  
     
-    # Handle question-mark and setter methods.
-    # Delegate everything else to the actual integer.
+    ##
+    # Iterates over result of #to_a
+    #
+    def each
+      self.to_a.each do |el|
+        yield(el)
+      end
+    end
+    
+    ##
+    # Returns all defined keys, no matter true or false
+    #
+    def all
+      @keys
+    end
+    
+    ##
+    # Handles magic question-mark and setter methods.
+    # Delegates everything else to the integer.
+    #
     def method_missing(meth, *args, &block)
       meth = meth.to_s
       if meth.ends_with?('=') && @keys.include?(meth[0, meth.size - 1].to_sym)
@@ -135,15 +114,50 @@ module IntegerFu
       end
     end
     
-    def each
-      self.to_a.each do |el|
-        yield(el)
-      end
+    ##
+    # Delegates to integer
+    #
+    def ==(other)
+      get_model_attr == other.to_i
+    end
+
+    ##
+    # Delegates to integer
+    #
+    def eql?(other)
+      get_model_attr.eql?(other.to_i)
+    end
+    
+    ##
+    # Delegates to integer
+    #
+    def is_a?(klass)
+      get_model_attr.is_a?(klass) || self.is_a?(klass)
     end
   
+    ##
+    # Delegates to integer
+    #
+    def inspect
+      get_model_attr.inspect
+    end
+    
+    ##
+    # Delegates to integer
+    #
+    def to_s
+      get_model_attr.to_s
+    end
+    
     private
+    def normalize_input(args)
+      arg1 = args.first
+      args = arg1.keys.select{|k| !!arg1[k]} if args1.is_a?(Hash)
+      args.map{|v| v.to_sym}
+    end
+    
     def add_keys!(keys)
-      keys = self.class.symbolize(keys.flatten)
+      keys = symbolize(keys.flatten)
     
       keys.each do |key|
         unless key_true?(key)
@@ -156,7 +170,7 @@ module IntegerFu
     end
   
     def remove_keys!(keys)
-      keys = self.class.symbolize(keys.flatten)
+      keys = symbolize(keys.flatten)
     
       keys.each do |key|
         if key_true?(key)
@@ -174,7 +188,7 @@ module IntegerFu
     end
   
     def value_for(key)
-      self.class.value_for(key, @keys)
+      mapped_integer_for_key(key, @keys)
     end
   
     def get_model_attr
