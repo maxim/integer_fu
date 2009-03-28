@@ -40,7 +40,7 @@ module IntegerFu
           args = helpers.symbolize(args.flatten)
           cumulative_value = helpers.array_to_integer_with_keys(options[:values], args)
           matching_integers = (0..(2**options[:values].size-1)).select{|n| n & cumulative_value == cumulative_value }
-          {:conditions => {attr_name.to_s => matching_integers}}
+          {:conditions => {"#{self.table_name}.#{attr_name}" => matching_integers}}
         }
       end
     end
