@@ -127,13 +127,6 @@ module IntegerFu
     def eql?(other)
       get_model_attr.eql?(other.to_i)
     end
-    
-    ##
-    # Delegates to integer
-    #
-    def is_a?(klass)
-      get_model_attr.is_a?(klass) || self.is_a?(klass)
-    end
   
     ##
     # Delegates to integer
