@@ -75,6 +75,21 @@ Now say you just want to give your horse a whole different array of traits. Or h
   @horse.traits                   # => 4
   @horse.traits.to_a              # => [:fluffy] (value of "smug" was false, hence only :fluffy was set)
 
+== New instance methods
+
+Along with having traits, the @horse will not have specialized attributes for each trait.
+
+  @horse.traits_fluffy  # => true
+  @horse.traits_happy   # => false
+  
+This helps creating checkboxes for Horse model, as follows.
+
+  <%= f.label :traits_fluffy, 'Fluffy' %>
+  <%= f.check_box :traits_fluffy %>
+  
+  <%= f.label :traits_happy, 'Happy' %>
+  <%= f.check_box :traits_happy %>
+
 == Finding fluffy horse in the database
 
 Integer_fu provides an efficient and flexible way to find all matching horses in database. Here's how you find :happy AND :fluffy horses:

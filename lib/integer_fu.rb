@@ -36,6 +36,19 @@ module IntegerFu
           end
         end
         
+        for value_name in options[:values]
+          class_eval <<-ruby
+            def #{attr_name}_#{value_name}=(arg)
+              arg = (arg == "0" ? false : arg)
+              self.#{attr_name}["#{value_name}"] = arg
+            end
+            
+            def #{attr_name}_#{value_name}
+              self.#{attr_name}["#{value_name}"]
+            end
+          ruby
+        end
+        
         named_scope attr_name, proc { |*args| 
           args = helpers.symbolize(args.flatten)
           cumulative_value = helpers.array_to_integer_with_keys(options[:values], args)
